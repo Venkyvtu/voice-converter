@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Text to Speech Converter</title>
+        <style>
+            *{
+                padding: 5px;
+                box-sizing: border-box;
+            }
+            body{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background:linear-gradient(45deg,red,blue);
+                
+            }
+            .text{
+                width: 600px;
+                text-align: center;
+            }
+            span{
+                color: brown;
+                text-decoration:underline;
+                padding-bottom: 5px;
+            }
+            textarea{
+                width: 100%;
+                height: 250px;
+                font-size: 15px;
+                border: 0px;
+                border-radius: 10px;
+            }
+            .row{
+                display: flex;
+                width: 600px;
+                align-items: center;
+                gap:10px;
+            }
+            button{
+                font-size: 15px;
+                padding: 10px 30px;
+                border-radius: 20px;
+                cursor: pointer;
+                background-color: black;
+                display: flex;
+                align-items: center;
+                color:white;
+            }
+            button img{
+                width: 19px;
+            }
+            select{
+                width: 100%;
+                padding: 10px 30px;
+                border-radius: 15px;
+            }
+            .text1{
+                display: flex;
+                width: 600px;
+                align-items: center;
+                gap:10px;
+            }
+            .sub{
+                float:right;
+            }
+        </style>
+    </head>
+<body>
+    
+    <div class="main">
+        <h1>Text to Speech  <span>Converter</span></h1>
+        <div class="text1">
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <b>IMAGE FILE</b><input type="file" name="image" accept="image/*" required>
+                <button type="submit" id="bt">Convert</button>
+            </form>
+            <div class="sub">
+                <b>PDF FILE</b><input type="file" name="pdf" id="inpFile">
+                <button  id="btnUpload">upload</button>
+            </div>
+        </div>
+        <div class="text">
+            
+            <div>
+                <textarea placeholder="write the text" id="resultText"></textarea>
+            </div>
+            <div class="row">
+                <select></select>
+                <button id="listen">Listen</button>
+            </div>
+        </div>
+    </div>
+    
+    <script> 
+const inpFile = document.getElementById("inpFile");
+const btnUpload = document.getElementById("btnUpload");
+const resultText = document.getElementById("resultText");
+const listen= document.getElementById("listen");
+btnUpload.addEventListener("click", () => {
+const formData = new FormData();
+formData.append("pdfFile", inpFile.files[0]);
+fetch("/extract-text", {
+method: "post",
+body: formData}).then(response => {
+
+return response.text();
+
+
+}).then(extractedText => {
+
+resultText.value = extractedText;
+
+});
+
+});
+console.log("hello");
+    document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(text => {
+                document.getElementById('resultText').innerText = text;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    let speech=new SpeechSynthesisUtterance();
+    let voices=[];
+    let voiceSelect=document.querySelector("select");
+    window.speechSynthesis.onvoiceschanged=()=>{
+        voices=window.speechSynthesis.getVoices();
+        voices.forEach((voice,i)=>(voiceSelect.options[i]=new Option(voice.name,i)));
+    };
+    listen.addEventListener("click",()=>{
+        speech.text=document.querySelector("textarea").value;
+        speech.voice=voices[voiceSelect.value];
+        console.log(1);
+        window.speechSynthesis.speak(speech);
+    })
+    </script>
+</body>
+</html>
